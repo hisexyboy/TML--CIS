@@ -1,0 +1,20 @@
+apiVersion: k8s.tmlake.com/v1
+kind: TcpUdpProfile
+metadata:
+  name: nginx-tcpudpprofile
+spec:
+  name: nginx_tcpudpprofile
+  ipType: "ipv4"
+  tcEnable: "off"
+  maxbandwidth: 0
+  maxConn: 0
+  dataPort: 20
+  toptEnable: "off"
+  toptKind: 28
+  ednsEnable: "off"
+  tcpRst: 5
+  tcpSyn: 120
+  tcpEstablished: 900
+  tcpFin: 10
+  icmp: 5
+  udp: 600
