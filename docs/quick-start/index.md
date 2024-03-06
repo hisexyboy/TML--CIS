@@ -15,7 +15,6 @@ CIS以K8S Deployment的形式部署在`tmlake`命名空间中，通过[List-Watc
   - 创建serviceaccount 和 RBAC
 
     ```shell
-    $ cd k8s-adc-controller/deploy/static
     $ kubectl create -f ./rbac.yaml
     ```
 
@@ -24,7 +23,18 @@ CIS以K8S Deployment的形式部署在`tmlake`命名空间中，通过[List-Watc
   - 注册TML CRD资源
 
     ```shell
-    $ kubectl create -f ./crds/
+    $ kubectl create -f ./k8s.tmlake.com_aclprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_aclprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_healthcheck.yaml
+    $ kubectl create -f ./k8s.tmlake.com_healthcheck.yaml-bak
+    $ kubectl create -f ./k8s.tmlake.com_httpprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_persistenceprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_rules.yaml
+    $ kubectl create -f ./k8s.tmlake.com_sslprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_tcpudpprofile.yaml
+    $ kubectl create -f ./k8s.tmlake.com_wafclasses.yaml
+    $ kubectl create -f ./k8s.tmlake.com_wafrules.yaml
+    $ kubectl create -f ./k8s.tmlake.com_websecurityprofile.yaml
     ```    
 
   - TML CRD资源List
