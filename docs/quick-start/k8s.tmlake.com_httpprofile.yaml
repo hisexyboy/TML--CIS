@@ -1,0 +1,259 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: httpprofiles.k8s.tmlake.com
+spec:
+  group: k8s.tmlake.com
+  names:
+    kind: HttpProfile
+    listKind: HttpProfileList
+    plural: httpprofiles
+    shortNames:
+      - hp
+    singular: httpprofile
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - name: profileName
+          type: string
+          description: the name for httpprofile. once define, cannot change
+          jsonPath: .spec.name
+        - name: profileType
+          type: string
+          description: the type for httpprofile
+          jsonPath: .spec.profileType
+        - name: uuid
+          type: string
+          description: the uuid for httpprofile. return by ADC api
+          jsonPath: .status.uuid
+        - name: state
+          type: string
+          description: the state for httpprofile. means the resource is valid/invalid in ADC api
+          jsonPath: .status.state
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: HttpProfile resource.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: spec of the HttpProfile resource.
+              type: object
+              properties:
+                name:
+                  description: 名称
+                  type: string
+                  pattern: ^[\w-]{1,32}$
+                profileType:
+                  description: 类型
+                  type: string
+                  enum: [ smart-http,fast-http ]
+                smartHttp:
+                  description: smart-http相关参数
+                  type: object
+                  properties:
+                    serverName:
+                      description: 绑定域名
+                      type: string
+                    websocketEnable:
+                      description: 是否支持web套接字
+                      type: string
+                      enum: [ "on","off" ]
+                    connreuse:
+                      description: 是否支持TCP连接复用
+                      type: string
+                      enum: [ "on","off" ]
+                    transparent:
+                      description: 是否支持IP地址透传
+                      type: string
+                      enum: [ "on","off" ]
+                    cipheader:
+                      description: IP地址携带
+                      type: string
+                    sorrypage:
+                      description: 失效保障页
+                      type: string
+                    dataCompress:
+                      description: 数据压缩
+                      type: object
+                      properties:
+                        gzip:
+                          description: 是否支持gzip压缩算法
+                          type: string
+                          enum: [ "on","off" ]
+                        deflate:
+                          description: 是否支持deflate压缩算法
+                          type: string
+                          enum: [ "on","off" ]
+                        gzipComLevel:
+                          description: 压缩等级
+                          type: integer
+                          minimum: 1
+                          maximum: 9
+                        gzipTypes:
+                          description: 压缩对象列表
+                          type: array
+                          items:
+                            description: 压缩对象
+                            type: string
+                            enum: [ text/html,text/css,text/xml,text/plain,text/javascript,application/xml,application/json,application/msword,application/vnd.ms-excel,application/vnd.ms-powerpoint,application/xml+rss,application/x-javascript,text/richtext ]
+                    cache:
+                      description: 数据缓存
+                      type: object
+                      properties:
+                        enable:
+                          description: 是否启用内容缓存
+                          type: string
+                          enum: [ "on","off" ]
+                        cacheObjcode:
+                          description: 缓存策略（响应码）
+                          type: array
+                          items:
+                            description: 响应码
+                            type: integer
+                            enum: [ 200,201,202,203,205,206,301,302,303,304,305,307 ]
+                        cacheObjtype:
+                          description: 缓存策略（HTTP对象）
+                          type: string
+                        cacheObjsize:
+                          description: 对象最大尺寸
+                          type: string
+                          pattern: ^(([1-9][0-9]{0,4}k)|([1-9][0-9]{0,2}m))$
+                        cacheObjnum:
+                          description: 对象最大数目
+                          type: integer
+                          minimum: 0
+                          maximum: 999999999
+                        cacheExpire:
+                          description: 对象失效时间
+                          type: string
+                          pattern: ^(([1-9][0-9]{0,7}s)|([1-9][0-9]{0,5}m)|([1-9][0-9]{0,3}h)|([1-9][0-9]{0,2}d))$
+                        cachePath:
+                          description: 对象存储介质
+                          type: string
+                          enum: [ ram,disk ]
+                        cacheMaxsize:
+                          description: 缓存空间容量
+                          type: string
+                          pattern: ^[1-9][0-9]{0,5}m$
+                    maxreq:
+                      description: 最大请求速率
+                      type: integer
+                      minimum: 0
+                      maximum: 999999999
+                    advanceParameters:
+                      description: 高级配置选项
+                      type: string
+                    log:
+                      description: weblog导出
+                      type: object
+                      properties:
+                        enable:
+                          description: 是否启用weblog导出
+                          type: string
+                        logServer:
+                          description: syslog服务器ip
+                          type: string
+                          pattern: ^([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$|^([\da-fA-F]{1,4}:){6}((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^::([\da-fA-F]{1,4}:){0,4}((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([\da-fA-F]{1,4}:):([\da-fA-F]{1,4}:){0,3}((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([\da-fA-F]{1,4}:){2}:([\da-fA-F]{1,4}:){0,2}((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([\da-fA-F]{1,4}:){3}:([\da-fA-F]{1,4}:){0,1}((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([\da-fA-F]{1,4}:){4}:((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$|^:((:[\da-fA-F]{1,4}){1,6}|:)$|^[\da-fA-F]{1,4}:((:[\da-fA-F]{1,4}){1,5}|:)$|^([\da-fA-F]{1,4}:){2}((:[\da-fA-F]{1,4}){1,4}|:)$|^([\da-fA-F]{1,4}:){3}((:[\da-fA-F]{1,4}){1,3}|:)$|^([\da-fA-F]{1,4}:){4}((:[\da-fA-F]{1,4}){1,2}|:)$|^([\da-fA-F]{1,4}:){5}:([\da-fA-F]{1,4})?$|^([\da-fA-F]{1,4}:){6}:$
+                        logPort:
+                          description: syslog服务器端口
+                          type: integer
+                          minimum: 1
+                          maximum: 65535
+                        logFormatType:
+                          description: 输出格式
+                          type: string
+                          enum: [ text,json ]
+                        logFormat:
+                          description: 输出内容
+                          type: string
+                fastHttp:
+                  description: fast-http相关参数
+                  type: object
+                  properties:
+                    connreuse:
+                      description: 是否支持TCP连接复用
+                      type: string
+                      enum: [ "on","off" ]
+                    cipheader:
+                      description: IP地址携带
+                      type: string
+                    dataCompress:
+                      description: 数据压缩
+                      type: object
+                      properties:
+                        gzip:
+                          description: 是否支持gzip压缩算法
+                          type: string
+                          enum: [ "on","off" ]
+                        deflate:
+                          description: 是否支持deflate压缩算法
+                          type: string
+                          enum: [ "on","off" ]
+                        gzipComLevel:
+                          description: 压缩等级
+                          type: integer
+                          minimum: 1
+                          maximum: 9
+                        gzipTypes:
+                          description: 压缩对象列表
+                          type: array
+                          items:
+                            description: 压缩对象
+                            type: string
+                            enum: [ text/html,text/css,text/xml,text/plain,text/javascript,application/xml,application/json,application/msword,application/vnd.ms-excel,application/vnd.ms-powerpoint,application/xml+rss,application/x-javascript,text/richtext ]
+                    cache:
+                      description: 数据缓存
+                      type: object
+                      properties:
+                        enable:
+                          description: 是否启用内容缓存
+                          type: string
+                          enum: [ "on","off" ]
+                        cacheObjcode:
+                          description: 缓存策略（响应码）
+                          type: array
+                          items:
+                            description: 响应码
+                            type: integer
+                            enum: [ 200,201,202,203,205,206,301,302,303,304,305,307 ]
+                        cacheObjsize:
+                          description: 对象最大尺寸
+                          type: string
+                          pattern: ^(([1-9][0-9]{0,4}k)|([1-9][0-9]{0,2}m))$
+                        cacheExpire:
+                          description: 对象失效时间
+                          type: string
+                          pattern: ^(([1-9][0-9]{0,7}s)|([1-9][0-9]{0,5}m)|([1-9][0-9]{0,3}h)|([1-9][0-9]{0,2}d))$
+                        cacheMaxsize:
+                          description: 缓存空间容量
+                          type: string
+                          pattern: ^[1-9][0-9]{0,5}m$
+                    advanceParameters:
+                      description: 高级配置选项
+                      type: string
+            status:
+              description: the status for the HttpProfile resource.
+              type: object
+              properties:
+                state:
+                  description: means the resource is valid/invalid in ADC api
+                  type: string
+                reason:
+                  description: the reason for state
+                  type: string
+                uuid:
+                  description: return by ADC api
+                  type: string
+      served: true
+      storage: true
+      subresources:
+        status: { }

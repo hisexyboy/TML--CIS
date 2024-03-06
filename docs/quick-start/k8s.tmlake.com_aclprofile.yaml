@@ -1,0 +1,85 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: aclprofiles.k8s.tmlake.com
+spec:
+  group: k8s.tmlake.com
+  names:
+    kind: AclProfile
+    listKind: AclProfileList
+    plural: aclprofiles
+    shortNames:
+      - ap
+    singular: aclprofile
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - name: profileName
+          type: string
+          description: the name for aclprofile. once define, cannot change
+          jsonPath: .spec.name
+        - name: uuid
+          type: string
+          description: the uuid for aclprofile. return by ADC api
+          jsonPath: .status.uuid
+        - name: state
+          type: string
+          description: the state for aclprofile. means the resource is valid/invalid in ADC api
+          jsonPath: .status.state
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: AclProfile resource.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: spec of the AclProfile resource.
+              type: object
+              properties:
+                name:
+                  description: 名称
+                  type: string
+                  pattern: ^[\w-]{1,32}$
+                aclList:
+                  description: 访问控制列表
+                  type: array
+                  items:
+                    description: 访问控制值
+                    type: object
+                    properties:
+                      enable:
+                        description: 是否启用
+                        type: string
+                        enum: [ on,off ]
+                      action:
+                        description: 策略
+                        type: string
+                        enum: [ allow,deny ]
+                      addr:
+                        description: IP地址
+                        type: string
+            status:
+              description: the status for the AclProfile resource.
+              type: object
+              properties:
+                state:
+                  description: means the resource is valid/invalid in ADC api
+                  type: string
+                reason:
+                  description: the reason for state
+                  type: string
+                uuid:
+                  description: return by ADC api
+                  type: string
+      served: true
+      storage: true
+      subresources:
+        status: { }

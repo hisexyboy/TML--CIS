@@ -1,0 +1,182 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tcpudpprofiles.k8s.tmlake.com
+spec:
+  group: k8s.tmlake.com
+  names:
+    kind: TcpUdpProfile
+    listKind: TcpUdpProfileList
+    plural: tcpudpprofiles
+    shortNames:
+      - tup
+    singular: tcpudpprofile
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - name: profileName
+          type: string
+          description: the name for tcpudpprofile. once define, cannot change
+          jsonPath: .spec.name
+        - name: ipType
+          type: string
+          description: the type for tcpudpprofile
+          jsonPath: .spec.ipType
+        - name: uuid
+          type: string
+          description: the uuid for tcpudpprofile. return by ADC api
+          jsonPath: .status.uuid
+        - name: state
+          type: string
+          description: the state for tcpudpprofile. means the resource is valid/invalid in ADC api
+          jsonPath: .status.state
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: TcpUdpProfile resource.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: spec of the TcpUdpProfile resource.
+              type: object
+              properties:
+                name:
+                  description: 名称
+                  type: string
+                  pattern: ^[\w-]{1,32}$
+                ipType:
+                  description: IP类型
+                  type: string
+                  enum: [ ipv4,ipv6 ]
+                tcEnable:
+                  description: 流量控制
+                  type: string
+                  enum: [ "on","off" ]
+                maxbandwidth:
+                  description: 最大流量吞吐（bps）
+                  type: integer
+                  minimum: 0
+                  maximum: 125829120000
+                maxConn:
+                  description: 最大并发连接
+                  type: integer
+                  minimum: 0
+                  maximum: 999999999
+                dataPort:
+                  description: FTP传输端口
+                  type: integer
+                  minimum: 1
+                  maximum: 65535
+                toptEnable:
+                  description: 客户端IP地址携带（TCP Option）
+                  type: string
+                  enum: [ "on","off" ]
+                toptKind:
+                  description: TCP Option类型序号
+                  type: integer
+                  minimum: 28
+                  maximum: 254
+                ednsEnable:
+                  description: EDNS客户端IP地址携带
+                  type: string
+                  enum: [ "on","off" ]
+                tcpRst:
+                  description: TCP_RST（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                tcpSyn:
+                  description: TCP_SYN（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                tcpEstablished:
+                  description: TCP_ESTABLISHED（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                tcpFin:
+                  description: TCP_FIN（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                icmp:
+                  description: ICMP（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                udp:
+                  description: UDP（秒）
+                  type: integer
+                  minimum: 1
+                  maximum: 31536000
+                ddos:
+                  description: 防护策略
+                  type: object
+                  properties:
+                    ddosEnable:
+                      description: ddos防护策略开关
+                      type: string
+                      enum: [ "on","off" ]
+                    ddosList:
+                      description: ddos防护策略列表
+                      type: array
+                      items:
+                        description: ddos防护策略详情
+                        type: object
+                        properties:
+                          name:
+                            description: 名称
+                            type: string
+                            pattern: ^[\w-]{1,32}$
+                          monitor:
+                            description: 控制粒度
+                            type: string
+                            enum: [ entirety,individual ]
+                          ipRange:
+                            description: IP范围
+                            type: object
+                            properties:
+                              start:
+                                description: 开始ip
+                                type: string
+                                pattern: ^([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$
+                              end:
+                                description: 结束ip
+                                type: string
+                                pattern: ^([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.([0-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$
+                          maxCc:
+                            description: 最大并发连接（cc）
+                            type: integer
+                            minimum: 0
+                            maximum: 999999999
+                          maxCps:
+                            description: 最大新建速率（cps）
+                            type: integer
+                            minimum: 0
+                            maximum: 999999999
+            status:
+              description: the status for the TcpUdpProfile resource.
+              type: object
+              properties:
+                state:
+                  description: means the resource is valid/invalid in ADC api
+                  type: string
+                reason:
+                  description: the reason for state
+                  type: string
+                uuid:
+                  description: return by ADC api
+                  type: string
+      served: true
+      storage: true
+      subresources:
+        status: { }

@@ -1,0 +1,202 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: persistenceprofiles.k8s.tmlake.com
+spec:
+  group: k8s.tmlake.com
+  names:
+    kind: PersistenceProfile
+    listKind: PersistenceProfileList
+    plural: persistenceprofiles
+    shortNames:
+      - pp
+    singular: persistenceprofile
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - name: profileName
+          type: string
+          description: the name for persistenceprofile. once define, cannot change
+          jsonPath: .spec.name
+        - name: Type
+          type: string
+          description: the type for persistenceprofile
+          jsonPath: .spec.persistence
+        - name: uuid
+          type: string
+          description: the uuid for persistenceprofile. return by ADC api
+          jsonPath: .status.uuid
+        - name: state
+          type: string
+          description: the state for persistenceprofile. means the resource is valid/invalid in ADC api
+          jsonPath: .status.state
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: PersistenceProfile resource.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: spec of the PersistenceProfile resource.
+              type: object
+              required: [ name,persistence ]
+              properties:
+                name:
+                  description: 名称
+                  type: string
+                  pattern: ^[\w-]{1,32}$
+                persistence:
+                  description: 类型
+                  type: string
+                  enum: [ ip,sslid,rdpcookie,header,cookie_insert,cookie_passive,url_all,url_part,querystring_parameters ]
+                ip:
+                  description: ip类型相关参数
+                  type: object
+                  required: [ persistenceNetmask ]
+                  properties:
+                    persistenceNetmask:
+                      description: 网络掩码
+                      type: string
+                      pattern: ^[0-9]*$
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                sslid:
+                  description: sslid类型相关参数
+                  type: object
+                  properties:
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                rdpcookie:
+                  description: rdpcookie类型相关参数
+                  type: object
+                  properties:
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                header:
+                  description: header类型相关参数
+                  type: object
+                  required: [ persistenceHeader ]
+                  properties:
+                    persistenceHeader:
+                      description: Header名称
+                      type: string
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                cookieInsert:
+                  description: cookie_insert类型相关参数
+                  type: object
+                  required: [ persistenceCookieInsert ]
+                  properties:
+                    persistenceCookieInsert:
+                      description: cookie名称
+                      type: string
+                    persistenceDomain:
+                      description: 域名
+                      type: string
+                    persistencePath:
+                      description: 路径
+                      type: string
+                    persistenceHttponly:
+                      description: HttpOnly
+                      type: string
+                      enum: [ on,off ]
+                    persistenceSecure:
+                      description: Secure
+                      type: string
+                      enum: [ on,off ]
+                cookiePassive:
+                  description: cookie_passive类型相关参数
+                  type: object
+                  required: [ persistenceCookiePassive ]
+                  properties:
+                    persistenceCookiePassive:
+                      description: Cookie名称
+                      type: string
+                urlAll:
+                  description: url_all类型相关参数
+                  type: object
+                  properties:
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                urlPart:
+                  description: url_part类型相关参数
+                  type: object
+                  required: [ persistenceUrlOffsetStart,persistenceUrlOffsetEnd ]
+                  properties:
+                    persistenceUrlOffsetStart:
+                      description: url内容范围（开始）
+                      type: integer
+                      minimum: 1
+                      maximum: 1024
+                    persistenceUrlOffsetEnd:
+                      description: url内容范围（结束）
+                      type: integer
+                      minimum: 1
+                      maximum: 1024
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+                querystringArgs:
+                  description: querystring_parameters类型相关参数
+                  type: object
+                  properties:
+                    parameters:
+                      description: 参数
+                      type: array
+                      items:
+                        description: 参数值
+                        type: string
+                    timeout:
+                      description: 时间
+                      type: integer
+                      default: 900
+                      minimum: 1
+                      maximum: 31536000
+            status:
+              description: the PersistenceProfile resource.
+              type: object
+              properties:
+                state:
+                  description: means the resource is valid/invalid in ADC api
+                  type: string
+                reason:
+                  description: the reason for state
+                  type: string
+                uuid:
+                  description: return by ADC api
+                  type: string
+      served: true
+      storage: true
+      subresources:
+        status: { }

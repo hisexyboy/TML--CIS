@@ -1,0 +1,76 @@
+##################################################################################################
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tmlake
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-adc-controller
+  namespace: tmlake
+  labels:
+    account: k8s-adc-controller
+    sidecar.istio.io/inject: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-adc-controller
+  namespace: tmlake
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-adc-controller
+  template:
+    metadata:
+      labels:
+        app: k8s-adc-controller
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: k8s-adc-controller
+      containers:
+        - image:  docker.io/lqsun666/k8s-adc-controller.ubuntu:v1.0
+          #imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          name: k8s-adc-controller
+          securityContext:
+            allowPrivilegeEscalation: true
+            runAsUser: 0
+            privileged: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ADC_SERVER_IP
+              value: 192.168.34.99
+            - name: ADC_SERVER_PORT
+              value: "10443"
+            - name: KUBERNETES_SERVICE_HOST
+              value: 192.168.34.100
+            - name: KUBERNETES_SERVICE_PORT
+              value: "6443"
+          args:
+            - -password=YKADC_test!@#
+            - -username=admin
+            - --logtostderr=true
+            - -v=3 # Enables extensive logging. Useful for troubleshooting.
+            #- -kube-config=/root/.kube/config
+#          volumeMounts:
+#            - name:  kube-config
+#              mountPath: /root/.kube/
+#      volumes:
+#        - name: kube-config
+#          secret:
+#            secretName: config

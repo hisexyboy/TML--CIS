@@ -1,0 +1,142 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: sslprofiles.k8s.tmlake.com
+spec:
+  group: k8s.tmlake.com
+  names:
+    kind: SslProfile
+    listKind: SslProfileList
+    plural: sslprofiles
+    shortNames:
+      - sp
+    singular: sslprofile
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - name: profileName
+          type: string
+          description: the name for sslprofile. once define, cannot change
+          jsonPath: .spec.name
+        - name: uuid
+          type: string
+          description: the uuid for sslprofile. return by ADC api
+          jsonPath: .status.uuid
+        - name: state
+          type: string
+          description: the state for sslprofile. means the resource is valid/invalid in ADC api
+          jsonPath: .status.state
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: SslProfile resource.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: spec of the SslProfile resource.
+              type: object
+              properties:
+                name:
+                  description: 名称
+                  type: string
+                  pattern: ^[\w-]{1,32}$
+                sslOffloading:
+                  description: 是否启用ssl卸载
+                  type: string
+                  enum: [ "on","off" ]
+                h2Enable:
+                  description: 是否启用HTTP/2
+                  type: string
+                  enum: [ "on","off" ]
+                frontend:
+                  description: 前端ssl
+                  type: object
+                  properties:
+                    protocols:
+                      description: 协议列表
+                      type: array
+                      items:
+                        description: 协议
+                        type: string
+                        enum: [ TLSv1,TLSv1.1,TLSv1.2,SSLv3 ]
+                    ciphersuite:
+                      description: ssl密码算法启用
+                      type: string
+                      enum: [ rsa,rsa-sm234,sm234 ]
+                    ciphers:
+                      description: 加密套件列表
+                      type: array
+                      items:
+                        description: 加密套件
+                        type: string
+                    rsaServerCertUuid:
+                      description: RSA服务器证书
+                      type: string
+                    sm2ServerCertUuid:
+                      description: ECC服务器证书
+                      type: string
+                    clientSslEnable:
+                      description: 双向客户端认证
+                      type: string
+                      enum: [ "on","off","optional" ]
+                    sslVerifyClient:
+                      description: ca证书
+                      type: string
+                    sslRsaCrlUuid:
+                      description: Rsa证书吊销列表
+                      type: string
+                    sslSm2CrlUuid:
+                      description: ECC证书吊销列表
+                      type: string
+                backend:
+                  description: 后端ssl
+                  type: object
+                  properties:
+                    protocols:
+                      description: 协议列表
+                      type: array
+                      items:
+                        description: 协议
+                        type: string
+                        enum: [ TLSv1,TLSv1.1,TLSv1.2,SSLv3 ]
+                    ciphersuite:
+                      description: ssl密码算法启用
+                      type: string
+                      enum: [ rsa,sm234 ]
+                    ciphers:
+                      description: 加密套件列表
+                      type: array
+                      items:
+                        description: 加密套件
+                        type: string
+                    rsaClientCertUuid:
+                      description: RSA客户端证书
+                      type: string
+                    sm2ClientCertUuid:
+                      description: ECC客户端证书
+                      type: string
+            status:
+              description: the status for the SslProfile resource.
+              type: object
+              properties:
+                state:
+                  description: means the resource is valid/invalid in ADC api
+                  type: string
+                reason:
+                  description: the reason for state
+                  type: string
+                uuid:
+                  description: return by ADC api
+                  type: string
+      served: true
+      storage: true
+      subresources:
+        status: { }

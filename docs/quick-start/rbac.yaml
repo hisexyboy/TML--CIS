@@ -1,0 +1,117 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-adc-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - list
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - list
+  - watch
+  - get
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - update
+- apiGroups:
+  - k8s.tmlake.com
+  resources:
+  - rules
+  - httpprofiles
+  - aclprofiles
+  - healthchecks
+  - persistenceprofiles
+  - sslprofiles
+  - tcpudpprofiles
+  - wafclasses
+  - wafrules
+  - websecurityprofiles
+  verbs:
+  - list
+  - watch
+  - get
+  - update
+  - create
+  - delete
+- apiGroups:
+  - k8s.tmlake.com
+  resources:
+  - rules/status
+  - httpprofiles/status
+  - aclprofiles/status
+  - healthchecks/status
+  - persistenceprofiles/status
+  - sslprofiles/status
+  - tcpudpprofiles/status
+  - wafclasses/status
+  - wafrules/status
+  - websecurityprofiles/status
+  verbs:
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  verbs:
+  - get
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-adc-controller
+subjects:
+- kind: ServiceAccount
+  name: k8s-adc-controller
+  namespace: tmlake
+roleRef:
+  kind: ClusterRole
+  name: k8s-adc-controller
+  apiGroup: rbac.authorization.k8s.io
